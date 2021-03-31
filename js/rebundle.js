@@ -3,7 +3,7 @@
 'use strict';
 
 // Defaults that can be overridden by parameters
-var modules = ["adafruit_ssd1305"];
+var modules = [];
 var bundleType = "mpy6";
 var bundle = "adafruit";
 var includeDependencies = true;
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       //console.log(outputZip.files);
       if (Object.keys(outputZip.files).length > 0) { 
         outputZip.generateAsync({type:"base64"}).then(function (base64) {
-            //window.location = "data:application/zip;base64," + base64;
+            window.location = "data:application/zip;base64," + base64;
         }, function (err) {
             console.log(err);
         });
