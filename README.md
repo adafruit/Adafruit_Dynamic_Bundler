@@ -1,2 +1,2 @@
-# Adafruit_Bundle_Services
-Adafruit Web Services helper for bundles
+# Adafruit_Dynamic_Bundler
+Adafruit Dynamic Bundler for creating smaller packages
