@@ -4,7 +4,7 @@
 
 // Defaults that can be overridden by parameters
 var modules = [];
-var bundleType = "mpy6";
+var bundleType = "6mpy";
 var bundle = "adafruit";
 var includeDependencies = true;
 
@@ -26,7 +26,7 @@ const bundleConfig = {
 var bundlePrefix;
 const promises = [];
 const bundleTypes = {
-  "mpy6": {
+  "6mpy": {
     "identifier": "6.x-mpy",
     "fileExtension": ".mpy"
   },
