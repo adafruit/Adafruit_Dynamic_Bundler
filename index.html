@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,9 +15,107 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js" integrity="sha512-3WaCYjK/lQuL0dVIRt1thLXr84Z/4Yppka6u40yEJT1QulYm9pCxguF6r8V84ndP5K03koI9hV1+zo/bUbgMtA==" crossorigin="anonymous"></script>
     <!-- import the webpage's javascript file -->
     <script src="js/rebundle.js" defer></script>
+    <script type='text/javascript' src='adafruit_libs.js'></script>
+    <script>
+		function insert_libs() {
+			var div_libs = document.getElementById('div-libs')
+			for (var key in libs) {
+				if (libs.hasOwnProperty(key)) {
+					var value = libs[key]
+					var div = document.createElement('div')
+					
+					var checkbox = document.createElement('input')
+					checkbox.type = 'checkbox'
+					checkbox.id = 'cb-' + key.replace('_', '')
+					checkbox.name = 'cbname-' + key.replace('_', '')
+					checkbox.title = key.replace('_', '')
+					checkbox.value = key.replace('_', '')
+					div.appendChild(checkbox)
+					
+					var label = document.createElement('label')
+					label.title = value.description
+					label.innerHTML = key.replace('_', '')
+					div.appendChild(label)
+					
+					div_libs.appendChild(div)
+					
+					console.log('appending libs...')
+				}
+			}
+
+		}
+		function bundle() {
+			var location_string = 'https://adafruit.github.io/Adafruit_Dynamic_Bundler/?libs='
+			var chosen_libs = new Array()
+			
+			for (var key in libs) {
+				if (libs.hasOwnProperty(key)) {
+					var cbID = 'cb-' + key.replace('_', '')
+					if(document.getElementById(cbID).checked) {
+						chosen_libs.push(key.replace('_', ''))
+					}
+				}
+			}
+			
+			location_string += chosen_libs.join(',')
+			
+			if(document.getElementById('adafruit_bundle').checked) {
+				// what should come here?
+			} else {
+				// what should come here?
+			}
+			
+			
+			if(document.getElementById('py_type').checked) {
+				location_string += '&type=py'
+			} else {
+				location_string += '&type=6mpy'
+			}
+			if(document.getElementById('yes_dependency').checked) {
+				location_string += '&deps=1'
+			} else {
+				location_string += '&deps=0'
+			}			
+			window.location = location_string
+		}
+		
+		 window.onload = () => {
+			insert_libs()
+		}
+    </script>
   </head>
   <body>
     <main class="main">
+		<div>
+			<h3>Bundle</h3>
+			<input type="radio" id='adafruit_bundle' name='bundle' value='adafruit_bundle' checked='checked'>
+			<label for='adafruit_bundle'>adafruit</label>
+			<br>
+			<input type="radio" id='circuitpython_bundle' name='bundle' value='circuitpython_bundle'>
+			<label for='circuitpython_bundle'>circuitpython</label>
+			<br>
+			
+			<h3>Type</h3>
+			<input type="radio" id='py_type' name='type' value='py_type'>
+			<label for='py_type'>py</label>
+			<br>
+			<input type="radio" id='6mpy_type' name='type' value='6mpy_type' checked='checked'>
+			<label for='6mpy_type'>6mpy</label>
+			<br>
+			
+			<h3>Include dependencies</h3>
+			<input type="radio" id='yes_dependency' name='dependency' value='yes_dependency' checked='checked'>
+			<label for='yes_dependency'>yes</label>
+			<br>
+			<input type="radio" id='no_dependency' name='dependency' value='no_dependency'>
+			<label for='no_dependency'>no</label>
+			<br>
+		</div>
+		<br>
+		<div id='div-libs'>
+			<h3>Libraries</h3>
+		</div>
+		<input type="button" value="Bundle" onclick="bundle()">
     </main>
   </body>
 </html>
