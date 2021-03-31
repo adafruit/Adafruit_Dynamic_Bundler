@@ -3,19 +3,27 @@
 'use strict';
 
 // Defaults that can be overridden by parameters
-var modules = [];
+var modules = ["adafruit_ssd1305"];
 var bundleType = "mpy6";
-var bundle = "Adafruit_CircuitPython_Bundle";
+var bundle = "adafruit";
+var includeDependencies = true;
 
 // Variables that likely change based on above variables
 var release;
 var bundleName;
 var bundleFile;
-var remoteFolder;
 
-const validBundles = ["Adafruit_CircuitPython_Bundle", "CircuitPython_Community_Bundle"];
+const bundleConfig = {
+  "adafruit": {
+    "remoteFolder": "https://adafruit-circuit-python.s3.amazonaws.com/bundles/adafruit/",
+    "repoName": "Adafruit_CircuitPython_Bundle"
+  },
+  "community": {
+    "remoteFolder": "https://adafruit-circuit-python.s3.amazonaws.com/bundles/community/",
+    "repoName": "CircuitPython_Community_Bundle"
+  }
+}
 var bundlePrefix;
-const libRoot = "lib/";
 const promises = [];
 const bundleTypes = {
   "mpy6": {
@@ -33,20 +41,18 @@ var outputZip = new JSZip();
 var bundleContents;
 
 async function getBundleContents() {
-  await getLatestRelease();
-  const jsonFile = remoteFolder + bundlePrefix + '-' + release + '.json';
-  console.log(jsonFile);
+  await getLatestRelease(); 
+  const jsonFile = bundleConfig[bundle].remoteFolder + bundlePrefix + '-' + release + '.json';
   var response = await fetch(jsonFile);
-  return await response.json();
+  
+  bundleContents = await response.json();
 }
 
 async function getLatestRelease() {
-  const response = await fetch('https://api.github.com/repos/adafruit/' + bundle + '/releases/latest');
+  const response = await fetch('https://api.github.com/repos/adafruit/' + bundleConfig[bundle].repoName + '/releases/latest');
   const data = await response.json();
-  
   release = data.tag_name;
   bundleName = bundlePrefix + "-" + bundleTypes[bundleType].identifier + "-" + release;
-  remoteFolder = 'https://github.com/adafruit/' + bundle + '/releases/download/' + release + '/';
   bundleFile = bundleName + ".zip";
   
   return data.tag_name;
@@ -55,7 +61,7 @@ async function getLatestRelease() {
 async function copyFile(location, inputZip, outputZip) {
   var zipFile = await inputZip.file(location).async("uint8array");
   if (zipFile !== null) {
-    console.log("Adding " + location);
+    //console.log("Adding " + location);
     await outputZip.file(location, zipFile);
   } else {
     console.log("Error: " + location + "not found!")
@@ -72,8 +78,10 @@ function getDependencies(moduleKey) {
         } else {
           foundModules.push(bundleContents[item].path + bundleTypes[bundleType].fileExtension);
         }
-        for(var dependencyKey in bundleContents[item].dependencies) {
-          foundModules = foundModules.concat(getDependencies(bundleContents[item].dependencies[dependencyKey]));
+        if (includeDependencies) {
+          for(var dependencyKey in bundleContents[item].dependencies) {
+            foundModules = foundModules.concat(getDependencies(bundleContents[item].dependencies[dependencyKey]));
+          }
         }
       }
     }
@@ -86,7 +94,7 @@ function getModules(module) {
   var foundModules = [];
   if (bundleContents != undefined) {
     for(var item in bundleContents) {
-      if (bundleContents[item].path === libRoot + module) {
+      if (item === module) {
         foundModules = foundModules.concat(getDependencies(item));
       }
     }
@@ -108,25 +116,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
   if (getParams["bundle"] !== undefined) {
-    if (validBundles.indexOf(getParams["bundle"]) >= 0) {
+    if (Object.keys(bundleConfig).indexOf(getParams["bundle"]) >= 0) {
       bundle = getParams["bundle"];
     }
   }
+  if (getParams["deps"] !== undefined) {
+    includeDependencies = getParams["deps"] != "0" && getParams["deps"].toLowerCase() != "false";
+  }
 
-  bundlePrefix = bundle.toLowerCase().replace(/_/g, "-");
+  bundlePrefix = bundleConfig[bundle].repoName.toLowerCase().replace(/_/g, "-");
   
   /*
   To Do:
   Print a message if no libs supplies
   It should show which options are allowed
 
-  Options
-  libs
-  bundle
-  type: defaults to mpy
+  Maybe a bundle creator screen
+  Maybe use the API instead of directly querying
+  
+  Make use of Multiple Library Dependencies (Could slow things down a bit)
   */
 
-  bundleContents = await getBundleContents();
+  await getBundleContents();
   
   // Search for modules in bundleContents (probably recursively)
   for(var moduleKey in modules) {
@@ -138,14 +149,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   console.log(packages);
   
-  new JSZip.external.Promise(function (resolve, reject) {
-    JSZipUtils.getBinaryContent(remoteFolder + bundleFile, function(err, data) {
-      if (err) {
-        reject(err);
+  fetch(bundleConfig[bundle].remoteFolder + bundleFile)
+  .then(async function (response) {
+      if (response.status === 200 || response.status === 0) {
+          return Promise.resolve(response.blob());
       } else {
-        resolve(data);
+          return Promise.reject(new Error(response.statusText));
       }
-    });
   }).then(function (data) {
       return JSZip.loadAsync(data);
   }).then(async function(zipContents) {
@@ -164,8 +174,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     Promise.all(promises).then(function (data) {
-      console.log("Final Output");
-      console.log(outputZip.files);
+      //console.log("Final Output");
+      //console.log(outputZip.files);
       if (Object.keys(outputZip.files).length > 0) { 
         outputZip.generateAsync({type:"base64"}).then(function (base64) {
             //window.location = "data:application/zip;base64," + base64;
