@@ -30,6 +30,10 @@ const bundleTypes = {
     "identifier": "6.x-mpy",
     "fileExtension": ".mpy"
   },
+  "7mpy": {
+    "identifier": "7.x-mpy",
+    "fileExtension": ".mpy"
+  },
   "py": {
     "identifier": "py",
     "fileExtension": ".py"
@@ -41,10 +45,10 @@ var outputZip = new JSZip();
 var bundleContents;
 
 async function getBundleContents() {
-  await getLatestRelease(); 
+  await getLatestRelease();
   const jsonFile = bundleConfig[bundle].remoteFolder + bundlePrefix + '-' + release + '.json';
   var response = await fetch(jsonFile);
-  
+
   bundleContents = await response.json();
 }
 
@@ -54,7 +58,7 @@ async function getLatestRelease() {
   release = data.tag_name;
   bundleName = bundlePrefix + "-" + bundleTypes[bundleType].identifier + "-" + release;
   bundleFile = bundleName + ".zip";
-  
+
   return data.tag_name;
 }
 
@@ -86,7 +90,7 @@ function getDependencies(moduleKey) {
       }
     }
   }
-  
+
   return foundModules;
 }
 
@@ -125,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   bundlePrefix = bundleConfig[bundle].repoName.toLowerCase().replace(/_/g, "-");
-  
+
   /*
   To Do:
   Print a message if no libs supplies
@@ -133,12 +137,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   Maybe a bundle creator screen
   Maybe use the API instead of directly querying
-  
+
   Make use of Multiple Library Dependencies (Could slow things down a bit)
   */
 
   await getBundleContents();
-  
+
   // Search for modules in bundleContents (probably recursively)
   for(var moduleKey in modules) {
     packages = packages.concat(getModules(modules[moduleKey]));
@@ -146,9 +150,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Remove Duplicates
   packages = packages.reduce(function(a,b){if(a.indexOf(b)<0)a.push(b);return a;},[]);
-  
+
   console.log(packages);
-  
+
   fetch(bundleConfig[bundle].remoteFolder + bundleFile)
   .then(async function (response) {
       if (response.status === 200 || response.status === 0) {
@@ -176,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     Promise.all(promises).then(function (data) {
       //console.log("Final Output");
       //console.log(outputZip.files);
-      if (Object.keys(outputZip.files).length > 0) { 
+      if (Object.keys(outputZip.files).length > 0) {
         outputZip.generateAsync({type:"base64"}).then(function (base64) {
             window.location = "data:application/zip;base64," + base64;
         }, function (err) {
