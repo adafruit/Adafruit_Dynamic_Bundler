@@ -7,7 +7,7 @@ The URL is https://adafruit.github.io/Adafruit_Dynamic_Bundler/
 
 * **libs**: A comma separated list of libraries to include. These are the same format as the folder in the bundle.
 * **bundle**: The name of the bundle. Currently can be either `adafruit` or `circuitpython`. Defaults to `adafruit`.
-* **type**: The bundle type. Currently can be either `py`, `7mpy`, `8mpy`. Defaults to `7mpy`.
+* **type**: The bundle type. Currently can be either `py`, `8mpy`, `9mpy`. Defaults to `8mpy`.
 * **deps**: Whether to include dependencies. Currently can be either `1`, `0`, `true`, or `false`. Defaults to `true`.
 
 ## Examples
