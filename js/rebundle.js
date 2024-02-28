@@ -4,7 +4,7 @@
 
 // Defaults that can be overridden by parameters
 var modules = [];
-var bundleType = "7mpy";
+var bundleType = "8mpy";
 var bundle = "adafruit";
 var includeDependencies = true;
 
@@ -26,12 +26,12 @@ const bundleConfig = {
 var bundlePrefix;
 const promises = [];
 const bundleTypes = {
-  "7mpy": {
-    "identifier": "7.x-mpy",
-    "fileExtension": ".mpy"
-  },
   "8mpy": {
     "identifier": "8.x-mpy",
+    "fileExtension": ".mpy"
+  },
+  "9mpy": {
+    "identifier": "9.x-mpy",
     "fileExtension": ".mpy"
   },
   "py": {
@@ -164,7 +164,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return JSZip.loadAsync(data);
   }).then(async function(zipContents) {
     for(var packageKey in packages) {
-      var zipItem;
       if (packages[packageKey].substr(-1 * (bundleTypes[bundleType].fileExtension.length)) !== bundleTypes[bundleType].fileExtension) {
         var zipFolder = zipContents.folder(bundleName + "/" + packages[packageKey]);
         if (zipFolder !== null) {
